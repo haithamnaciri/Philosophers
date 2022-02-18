@@ -6,7 +6,7 @@
 /*   By: hnaciri- <hnaciri-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/16 14:54:12 by hnaciri-          #+#    #+#             */
-/*   Updated: 2022/02/18 11:26:02 by hnaciri-         ###   ########.fr       */
+/*   Updated: 2022/02/18 23:13:43 by hnaciri-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,11 +22,11 @@ unsigned long long	get_time(void)
 
 void	print(char *s, t_philo *philo)
 {
-	pthread_mutex_lock (&philo->data->print);
+	sem_wait (philo->data->print);
 	if (!philo->data->is_dead)
 		printf ("%llu	%d	%s",
 			get_time() - philo->data->start_time, philo->number, s);
-	pthread_mutex_unlock (&philo->data->print);
+	sem_post (philo->data->print);
 }
 
 void	ft_usleep(unsigned long long to_sleep)
@@ -36,18 +36,4 @@ void	ft_usleep(unsigned long long to_sleep)
 	now = get_time();
 	while ((get_time() - now) < to_sleep)
 		usleep (300);
-}
-
-int	is_all_finish_eating(t_data *data)
-{
-	int	i;
-
-	i = -1;
-	while (++i < (int)data->number)
-	{
-		if (data->philos->time_he_eat < data->time)
-			return (0);
-		data->philos = data->philos->next;
-	}
-	return (1);
 }

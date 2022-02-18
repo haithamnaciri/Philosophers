@@ -6,7 +6,7 @@
 /*   By: hnaciri- <hnaciri-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/08 13:01:45 by hnaciri-          #+#    #+#             */
-/*   Updated: 2022/02/18 11:23:27 by hnaciri-         ###   ########.fr       */
+/*   Updated: 2022/02/18 23:28:22 by hnaciri-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,9 +14,9 @@
 
 void	eating(t_philo *philo)
 {
-	pthread_mutex_lock (&philo->fork);
+	sem_wait (philo->data->forks);
 	print ("has taken a fork\n", philo);
-	pthread_mutex_lock (&philo->next->fork);
+	sem_wait (philo->data->forks);
 	print ("has taken a fork\n", philo);
 	philo->is_eating = 1;
 	philo->last_time_eat = get_time();
@@ -24,49 +24,43 @@ void	eating(t_philo *philo)
 	ft_usleep (philo->data->time_to_eat);
 	philo->is_eating = 0;
 	philo->time_he_eat++;
-	pthread_mutex_unlock (&philo->fork);
-	pthread_mutex_unlock (&philo->next->fork);
+	sem_post (philo->data->forks);
+	sem_post (philo->data->forks);
 }
 
-void	*actions(void *data)
+void	*check(void *data)
 {
 	t_philo	*philo;
 
 	philo = (t_philo *)data;
+	while (1)
+	{
+		if (philo->time_he_eat >= philo->data->time
+			&& (int)philo->data->time != -1)
+			exit (0);
+		if (get_time() - philo->last_time_eat
+			>= philo->data->time_to_die && !philo->is_eating)
+			break ;
+	}
+	sem_wait (philo->data->print);
+	printf ("\033[0;31m%llu	%d	die\n",
+		get_time() - philo->data->start_time, philo->number);
+	kill (philo->pid, SIGINT);
+	return (NULL);
+}
+
+void	actions(t_philo *philo)
+{
 	if (!(philo->number % 2))
 		usleep (1500);
-	while (!philo->data->is_dead)
+	pthread_create (&philo->check, NULL, check, philo);
+	while (1)
 	{
 		eating (philo);
-		if (philo->time_he_eat == philo->data->time)
-			break ;
 		print ("is sleeping\n", philo);
 		ft_usleep (philo->data->time_to_sleep);
 		print ("is thinking\n", philo);
 	}
-	return (0);
-}
-
-void	death(void *data)
-{
-	t_philo	*philo;
-
-	philo = (t_philo *)data;
-	while (philo)
-	{
-		if (philo->time_he_eat >= philo->data->time)
-			if (is_all_finish_eating(philo->data))
-				return ;
-		if (get_time() - philo->last_time_eat
-			>= philo->data->time_to_die && !philo->is_eating)
-			break ;
-		philo = philo->next;
-	}
-	philo->data->is_dead = 1;
-	pthread_mutex_lock (&philo->data->print);
-	printf ("\033[0;31m%llu	%d	die\n",
-		get_time() - philo->data->start_time, philo->number);
-	pthread_mutex_unlock (&philo->data->print);
 }
 
 int	exec(t_data *data)
@@ -77,10 +71,17 @@ int	exec(t_data *data)
 	data->start_time = get_time();
 	while (++i < (int)data->number)
 	{
-		pthread_create (&data->philos->thread, NULL, actions, data->philos);
+		data->philos->pid = fork ();
+		if (!data->philos->pid)
+			actions (data->philos);
 		data->philos = data->philos->next;
 	}
-	death (data->philos);
+	i = -1;
+	while (++i < (int)data->number)
+	{
+		waitpid (data->philos->pid, 0, 0);
+		data->philos = data->philos->next;
+	}
 	return (0);
 }
 

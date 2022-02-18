@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   philo_utils.c                                      :+:      :+:    :+:   */
+/*   philo_utils1.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: hnaciri- <hnaciri-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/16 14:47:14 by hnaciri-          #+#    #+#             */
-/*   Updated: 2022/02/16 14:53:25 by hnaciri-         ###   ########.fr       */
+/*   Updated: 2022/02/18 23:28:47 by hnaciri-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,10 @@ void	ft_fill(t_data *data, unsigned int *table)
 	data->time_to_eat = table[2];
 	data->time_to_sleep = table[3];
 	data->time = table[4];
-	pthread_mutex_init (&data->print, NULL);
+	sem_unlink ("PRINT");
+	data->forks = sem_open ("PRINT", O_CREAT | O_EXCL, 0777, 1);
+	sem_unlink ("FORKS");
+	data->forks = sem_open ("FORKS", O_CREAT | O_EXCL, 0777, data->number);
 }
 
 int	ft_git_numbers(int ac, char **av, t_data *data)

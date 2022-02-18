@@ -6,7 +6,7 @@
 /*   By: hnaciri- <hnaciri-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/11/05 15:25:31 by hnaciri-          #+#    #+#             */
-/*   Updated: 2022/02/13 17:47:43 by hnaciri-         ###   ########.fr       */
+/*   Updated: 2022/02/18 13:48:11 by hnaciri-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,6 @@ t_philo	*ft_lstnew(unsigned int *numbers, t_data *data)
 	new->time_he_eat = 0;
 	new->is_eating = 0;
 	new->data = data;
-	pthread_mutex_init(&new->fork, NULL);
 	new->next = 0;
 	return (new);
 }

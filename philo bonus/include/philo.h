@@ -6,7 +6,7 @@
 /*   By: hnaciri- <hnaciri-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/08 12:59:00 by hnaciri-          #+#    #+#             */
-/*   Updated: 2022/02/16 14:56:06 by hnaciri-         ###   ########.fr       */
+/*   Updated: 2022/02/18 23:22:41 by hnaciri-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,8 @@
 # include <limits.h>
 # include <pthread.h>
 # include <sys/time.h>
+# include <signal.h>
+# include <semaphore.h>
 
 struct	s_data;
 typedef struct s_philo
@@ -30,8 +32,8 @@ typedef struct s_philo
 	unsigned int		time_he_eat;
 	unsigned long long	last_time_eat;
 	unsigned int		is_eating;
-	pthread_t			thread;
-	pthread_mutex_t		fork;
+	pthread_t			check;
+	int					pid;
 	struct s_data		*data;
 	struct s_philo		*next;
 }	t_philo;
@@ -43,7 +45,8 @@ typedef struct s_data
 	unsigned int		time_to_die;
 	unsigned int		time_to_eat;
 	unsigned long long	start_time;
-	pthread_mutex_t		print;
+	sem_t				*print;
+	sem_t				*forks;
 	int					is_dead;
 	t_philo				*philos;
 	unsigned int		time;
